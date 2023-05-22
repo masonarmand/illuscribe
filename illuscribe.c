@@ -1597,13 +1597,19 @@ void handle_uses(SlideList list, Slide** current_slide, Box** current_box, char*
 {
         char expected[] = "str";
         Slide* slide;
+        Slide* found_slide;
         SlideElement* se;
         char* name;
         (void) current_box;
         check_syntax(args, argc, expected, line_num);
         name = remove_quotes(args[1]);
 
-        slide = copy_slide(find_slide_by_name(name, list));
+        found_slide = find_slide_by_name(name, list);
+        if (found_slide == NULL) {
+                fprintf(stderr, "Error on line %d : Couldn't find slide or template with name: %s\n", line_num, name);
+                exit(1);
+        }
+        slide = copy_slide(found_slide);
 
         se = malloc(sizeof(SlideElement));
         if (!se) {

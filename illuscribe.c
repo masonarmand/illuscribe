@@ -119,7 +119,7 @@ typedef struct {
 void parse_slideshow(char* filename, SlideList* list);
 
 void render_endslide(Display* dpy, Window window, int screen);
-void render_slideshow(SlideList list);
+void render_slideshow(int width, int height, SlideList list);
 void change_slide(Display* dpy, Window window, SlideList list, unsigned int* slide_idx, int screen, int amount);
 void update_title(Display* dpy, Window window, SlideList list, unsigned int slide_idx);
 char* get_top_text(Slide slide);
@@ -207,14 +207,21 @@ int main(int argc, char** argv)
 {
         SlideList slide_list;
 
-        if (argc != 2) {
+        if (argc < 2) {
                 fprintf(stderr, "Usage: %s <slideshow file>\n", argv[0]);
                 exit(1);
         }
 
         slide_list_init(&slide_list);
         parse_slideshow(argv[1], &slide_list);
-        render_slideshow(slide_list);
+        if (argc == 4) {
+                int width = atoi(argv[2]);
+                int height = atoi(argv[3]);
+                render_slideshow(width, height, slide_list);
+        }
+        else {
+                render_slideshow(854, 480, slide_list); /* default to 16:9 aspect ratio */
+        }
         slide_list_free(&slide_list);
 
         return 0;
@@ -281,7 +288,7 @@ void parse_slideshow(char* filename, SlideList* list)
 }
 
 
-void render_slideshow(SlideList list)
+void render_slideshow(int window_width, int window_height, SlideList list)
 {
         Display* dpy;
         Window window;
@@ -290,8 +297,6 @@ void render_slideshow(SlideList list)
         XRenderColor render_color_white = { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF };
         XEvent e;
         int screen;
-        int window_width = 854;
-        int window_height = 480;
         int last_width = window_width;
         int last_height = window_height;
         unsigned int slide_idx = 0;

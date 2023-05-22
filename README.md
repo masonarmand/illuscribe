@@ -35,6 +35,10 @@ Here are the basic commands:
 ```
 illuscribe <path-to-your-slideshow-file>
 ```
+Also, it runs in 16:9 aspect ratio by default. If you have a different aspect ratio monitor you can specify the initial window dimensions like so:
+```
+illuscribe <path-to-you-slideshow-file> <window-width> <window-height>
+```
 ## Installation
 ```
 git clone https://github.com/masonarmand/illuscribe.git

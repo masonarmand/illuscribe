@@ -1,0 +1,88 @@
+template: "default"
+    box: "title", stack-vertical, align-center
+    box: "content", stack-horizontal, align-left
+end
+
+template: "split-image"
+    box: "title", stack-vertical, align-center
+    box: "content-left", stack-horizontal, align-left
+    box: "content-right", stack-horizontal, align-center
+end
+
+slide: "opening-slide"
+    uses: "default"
+    define: "title"
+        text: huge, "The Art of Vincent Van Gogh"
+    end
+    define: "content"
+        text: normal, "Vincent Van Gogh was a Dutch post-impressionist painter who is among the most famous and influential figures in the history of Western art."
+        text: normal, "Let's explore some of his most iconic works."
+    end
+end
+
+slide: "starry-night-slide"
+    uses: "split-image"
+    define: "title"
+        text: title, "Starry Night"
+    end
+    define: "content-left"
+        text: normal, "Painted in June 1889, it depicts the view from the east-facing window of his asylum room."
+        text: normal, "It has been in the permanent collection of the Museum of Modern Art in New York City since 1941."
+    end
+    define: "content-right"
+        image: "images/starrynight.png"
+    end
+end
+
+slide: "sunflowers-slide"
+    uses: "split-image"
+    define: "title"
+        text: title, "Sunflowers"
+    end
+    define: "content-left"
+        text: normal, "This series of paintings were executed in Arles, in the south of France in 1888 and 1889."
+        text: normal, "Van Gogh's Sunflowers are among his most famous works."
+    end
+    define: "content-right"
+        image: "images/sunflowers.png"
+    end
+end
+
+slide: "cafe-terrace-at-night-slide"
+    uses: "split-image"
+    define: "title"
+        text: title, "Cafe Terrace at Night"
+    end
+    define: "content-left"
+        text: normal, "Painted in September 1888, it depicts a cafe in Arles, France, then Cafe Terrace, today Cafe Van Gogh."
+        text: normal, "The style of the painting is unique for Van Gogh with warm colors and depth of perspective."
+    end
+    define: "content-right"
+        image: "images/cafeterraceatnight.png"
+    end
+end
+
+slide: "irises-slide"
+    uses: "split-image"
+    define: "title"
+        text: title, "Irises"
+    end
+    define: "content-left"
+        text: normal, "Van Gogh painted 'Irises' in the garden of the asylum at Saint-Remy in 1889."
+        text: normal, "The painting is a fine example of the artist's ability to render the vibrant beauty of nature."
+    end
+    define: "content-right"
+        image: "images/irises.png"
+    end
+end
+
+slide: "closing-slide"
+    uses: "default"
+    define: "title"
+        text: huge, "Vincent Van Gogh: A Legacy"
+    end
+    define: "content"
+        text: normal, "Vincent Van Gogh's artwork continues to inspire millions of people worldwide."
+        text: normal, "Each painting tells a story, conveying deep personal and emotional undertones."
+    end
+end

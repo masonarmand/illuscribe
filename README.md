@@ -2,11 +2,18 @@
 
 # illuscribe
 Present slideshows from plaintext files.
-Illuscribe is a simple program written in C using the Xlib and stb_image libraries. It parses plaintext files and renders them as presentations. Here is an example of a slideshow (with only one slide):
+Illuscribe is a simple program written in C using the Xlib and stb_image libraries. It parses plaintext files and renders them as presentations.
+Here is an example of a slideshow with two slides (a title slide, and the slide in the image above):
 ```
 template: "default"
     box: "title", stack-vertical, align-center
     box: "content", stack-horizontal, align-left
+end
+
+template: "split-image"
+    box: "title", stack-vertical, align-center
+    box: "content-left", stack-horizontal, align-left
+    box: "content-right", stack-horizontal, align-center
 end
 
 slide: "opening-slide"
@@ -17,6 +24,20 @@ slide: "opening-slide"
     define: "content"
         text: normal, "Vincent Van Gogh was a Dutch post-impressionist painter who is among the most famous and influential figures in the history of Western art."
         text: normal, "Let's explore some of his most iconic works."
+    end
+end
+
+slide: "starry-night-slide"
+    uses: "split-image"
+    define: "title"
+        text: title, "Starry Night"
+    end
+    define: "content-left"
+        text: normal, "Painted in June 1889, it depicts the view from the east-facing window of his asylum room."
+        text: normal, "It has been in the permanent collection of the Museum of Modern Art in New York City since 1941."
+    end
+    define: "content-right"
+        image: "starrynight.png"
     end
 end
 ```

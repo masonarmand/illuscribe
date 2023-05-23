@@ -628,6 +628,7 @@ void apply_layout(Slide* slide, Display* dpy, Window window)
         unsigned int i;
         unsigned int j;
 
+
         /* calculate default box size */
         for (i = 0; i < slide->element_count; i++) {
                 Box* box;
@@ -896,11 +897,24 @@ void apply_word_wrap(Display* dpy, Window window, Box* box)
                                 unsigned int new_len = 0;
                                 unsigned int next_len = 0;
                                 float width = 0.0;
+                                float max_width = 0.0;
                                 float space_width = (get_char_width(' ', text->font_size, dpy) / attr.width) / 1.0f;
                                 char** split_text = split_str(text->content, " ", &split_len);
                                 char* new_line = NULL;
                                 char* next_line = NULL;
                                 FontSize fn = text->font_size;
+
+                                for (j = 0; j < split_len; j++) {
+                                        float temp_width = (get_strtext_width(split_text[j], text->font_size, dpy) / attr.width) / 1.0f;
+                                        if (temp_width > max_width) {
+                                                max_width = temp_width;
+                                        }
+                                }
+
+                                if (max_width > box->width) {
+                                        fprintf(stderr, "Error: Single word in text is wider than box width. In box: %s\n", box->name);
+                                        exit(1);
+                                }
 
                                 for (j = 0; j < split_len; j++) {
                                         if (j > 0)

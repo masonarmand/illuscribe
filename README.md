@@ -4,7 +4,8 @@
 Present slideshows from plaintext files.
 Illuscribe is a simple program written in C using the Xlib and stb_image libraries. It parses plaintext files and renders them as presentations.
 
-For an example of what a slideshow may look like, view the example/ folder (credit to https://www.vangoghmuseum.nl for the Van Gogh painting scans)
+For an example of what a slideshow may look like, view the `example/` folder  
+(credit to https://www.vangoghmuseum.nl for the Van Gogh painting scans)
 
 ## Syntax/Commands
 Here are the basic commands:

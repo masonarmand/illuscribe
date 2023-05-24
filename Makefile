@@ -42,8 +42,5 @@ run:
 install: all
 	install -m 755 $(EXEC) /usr/bin
 
-debug:
-	gdb -x gdbinit $(EXEC)
-
 clean:
 	-rm $(EXEC)

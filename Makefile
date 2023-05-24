@@ -23,27 +23,27 @@ WARNINGS += -Wunsafe-loop-optimizations
 WARNINGS += -Wfree-nonheap-object
 WARNINGS += -Wswitch
 
-
 CC = gcc
-CFLAGS = -std=c89 -D_GNU_SOURCE -lXrender -lX11 -lXft -lm -g -I/usr/include/freetype2/ -I./include/
-SOURCES = *.c
+CFLAGS = -std=c89 -D_GNU_SOURCE -I/usr/include/freetype2/ -I./include/
+LDFLAGS = -lXrender -lX11 -lXft -lm
+SOURCES = illuscribe.c
 EXEC = illuscribe
 
+.PHONY: all install clean
 
 all: build
 
 build:
-	$(CC) -g $(SOURCES) $(CFLAGS) $(WARNINGS) -o $(EXEC)
-	#$(CC) -g $(SOURCES) $(CFLAGS) -o $(EXEC)
+	$(CC) -g $(CFLAGS) $(WARNINGS) $(SOURCES) $(LDFLAGS) -o $(EXEC)
 
 run:
 	./$(EXEC)
+
 install: all
-	cp -f $(EXEC) /usr/bin
-	chmod 755 /usr/bin/$(EXEC)
+	install -m 755 $(EXEC) /usr/bin
 
 debug:
 	gdb -x gdbinit $(EXEC)
 
 clean:
-	rm $(EXEC)
+	-rm $(EXEC)

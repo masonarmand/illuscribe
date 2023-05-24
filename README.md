@@ -8,15 +8,25 @@ For an example of what a slideshow may look like, view the `example/` folder
 (credit to https://www.vangoghmuseum.nl for the Van Gogh painting scans)
 
 ## Syntax/Commands
-Here are the basic commands:
+Here are the basic commands/functions:
 - `slide: name` - Declares a slide. Slides contain boxes.
-- `box: name, stack-direction, text-alignment` - Declares a box. Boxes can contain text and images.
+    - name: string
+- `box: name, <stack-direction>, <text-alignment>` - Declares a box. Boxes can contain text and images.
+    - name: string
+    - stack-direction: `stack-vertical`, `stack-horizontal`
+    - text-alignment: `align-left`, `align-center`, `align-right`
 - `define: name` - Add text or images inside of a define block, `name` specifies which box to add to.
-- `text: size, content` - Add text to a box. Size can be `huge`, `title`, `normal`, or `small`.
+    - name: string 
+- `text: <size>, content` - Add text to a box.
+    - size: `huge`, `title`, `normal`, `small`
+    - content: string
 - `image: filename` - Add an image with the specified filename.
-- `end` - End a slide or define block.
+    - filename: string 
+- `end` - End a slide or define block. 
 - `template: name` - Exact same as defining a slide, except it will not be rendered.
+    - name: string 
 - `uses: name` - Include a slide or template in another slide. You can then define boxes that are in those slides/templates.  
+    - name: string
 
 Example of all the above commands in use:
 ```
@@ -54,6 +64,7 @@ slide: "slide1"
     end
 end
 ```
+You can also use `uses:` on slides, not just templates, for including full slides inside other slides.
 ## Usage
 ```
 illuscribe <path-to-your-slideshow-file>
@@ -63,8 +74,15 @@ Also, it runs in 16:9 aspect ratio by default. If you have a different aspect ra
 illuscribe <path-to-you-slideshow-file> <window-width> <window-height>
 ```
 ## Installation
+Install the required dependencies:
+```
+sudo apt update
+sudo apt install libxrender-dev libx11-dev libxft-dev
+```
+Clone the repository and compile:
 ```
 git clone https://github.com/masonarmand/illuscribe.git
 cd illuscribe
 sudo make install
 ```
+Now you can run `illuscribe` on any slideshow file.

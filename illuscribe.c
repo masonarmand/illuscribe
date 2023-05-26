@@ -12,6 +12,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xrender.h>
+#include <X11/extensions/Xrandr.h>
 #include <X11/Xft/Xft.h>
 #include <X11/keysym.h>
 #include <stdio.h>
@@ -121,6 +122,7 @@ void parse_slideshow(char* filename, SlideList* list);
 
 void render_endslide(Display* dpy, Window window, int screen);
 void render_slideshow(int width, int height, SlideList list);
+int get_default_monitor_dimensions(Display* dpy, int* width, int* height);
 void change_slide(Display* dpy, Window window, SlideList list, unsigned int* slide_idx, int screen, int amount);
 void toggle_fullscreen(Display* dpy, Window window, int screen, XEvent e, bool fullscreen);
 void update_title(Display* dpy, Window window, SlideList list, unsigned int slide_idx);
@@ -301,7 +303,8 @@ void render_slideshow(int window_width, int window_height, SlideList list)
         int screen;
         int last_width = window_width;
         int last_height = window_height;
-        unsigned int dpy_width, dpy_height;
+        int dpy_width;
+        int dpy_height;
         unsigned int slide_idx = 0;
         unsigned int i;
         float scale_factor = 0.5f;
@@ -318,10 +321,14 @@ void render_slideshow(int window_width, int window_height, SlideList list)
 
         /* calculate window dimensions */
         if (window_width == 0 || window_height == 0) {
-                dpy_width = DisplayWidth(dpy, screen);
-                dpy_height = DisplayHeight(dpy, screen);
+                if (get_default_monitor_dimensions(dpy, &dpy_width, &dpy_height) != 0) {
+                        fprintf(stderr, "Couldn't find default monitor. Defaulting to 640x480.\n");
+                        dpy_width = 640;
+                        dpy_height = 480;
+                }
                 window_width = dpy_width * scale_factor;
                 window_height = dpy_height * scale_factor;
+                printf("%d, %d  %d, %d\n", window_width, window_height, dpy_width, dpy_height);
         }
 
         window = XCreateSimpleWindow(dpy, RootWindow(dpy, screen),
@@ -426,6 +433,57 @@ void render_slideshow(int window_width, int window_height, SlideList list)
         XCloseDisplay(dpy);
 }
 
+
+int get_default_monitor_dimensions(Display* dpy, int* width, int* height)
+{
+        XWindowAttributes attrs;
+        XRRScreenResources* screen_res;
+        XRROutputInfo* output_info;
+        XRRCrtcInfo* crtc_info;
+        Window root;
+        Window temp_window;
+        int i;
+
+        root = DefaultRootWindow(dpy);
+
+        /* create temporary window and map it.
+         * we will use the coordinates of this window to
+         * find out what monitor the window spawns on */
+        temp_window = XCreateSimpleWindow(dpy, root, 0, 0, 1, 1, 0, 0, 0);
+        XMapWindow(dpy, temp_window);
+        XSync(dpy, False);
+
+        XGetWindowAttributes(dpy, temp_window, &attrs);
+        screen_res = XRRGetScreenResources(dpy, root);
+
+        for (i = 0; i < screen_res->noutput; i++) {
+                output_info = XRRGetOutputInfo(dpy, screen_res, screen_res->outputs[i]);
+                if (output_info->connection == RR_Connected) {
+                        crtc_info = XRRGetCrtcInfo(dpy, screen_res, output_info->crtc);
+                        if ((attrs.x >= (int)crtc_info->x
+                                && attrs.x < (int)(crtc_info->x + crtc_info->width))
+                                && (attrs.y >= (int)crtc_info->y
+                                && attrs.y < (int)(crtc_info->y + crtc_info->height))) {
+
+                                *width = crtc_info->width;
+                                *height = crtc_info->height;
+                                XRRFreeCrtcInfo(crtc_info);
+                                XRRFreeOutputInfo(output_info);
+                                XRRFreeScreenResources(screen_res);
+                                XUnmapWindow(dpy, temp_window);
+                                XDestroyWindow(dpy, temp_window);
+                                return 0;
+                        }
+                        XRRFreeCrtcInfo(crtc_info);
+                }
+                XRRFreeOutputInfo(output_info);
+        }
+        XRRFreeScreenResources(screen_res);
+        XUnmapWindow(dpy, temp_window);
+        XDestroyWindow(dpy, temp_window);
+
+        return -1; /* Couldn't find a monitor */
+}
 
 void change_slide(Display* dpy, Window window, SlideList list, unsigned int* slide_idx, int screen, int amount)
 {

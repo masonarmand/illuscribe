@@ -25,7 +25,7 @@ WARNINGS += -Wswitch
 
 CC = gcc
 CFLAGS = -std=c89 -D_GNU_SOURCE -I/usr/include/freetype2/ -I./include/
-LDFLAGS = -lXrender -lX11 -lXft -lm
+LDFLAGS = -lXrender -lX11 -lXft -lm -lXrandr
 SOURCES = illuscribe.c
 EXEC = illuscribe
 

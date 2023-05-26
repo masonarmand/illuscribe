@@ -50,7 +50,7 @@ Here are the basic commands/functions:
 
 Example of all the above commands in use:
 ```
-template "my-template"
+template: "my-template"
     box: "title-box", stack-vertical, align-center
     box: "content-box", stack-horizontal, align-left
 end

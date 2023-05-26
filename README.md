@@ -4,7 +4,7 @@
 Present slideshows from plaintext files.
 Illuscribe is a simple program written in C using the Xlib and stb_image libraries. It parses plaintext files and renders them as presentations.
 
-For an example of what a slideshow may look like, view the `example/` folder  
+For an example of what a slideshow may look like, view the `example/` folder
 (credit to https://www.vangoghmuseum.nl for the Van Gogh painting scans)
 
 ## Syntax/Commands
@@ -16,16 +16,16 @@ Here are the basic commands/functions:
     - stack-direction: `stack-vertical`, `stack-horizontal`
     - text-alignment: `align-left`, `align-center`, `align-right`
 - `define: name` - Add text or images inside of a define block, `name` specifies which box to add to.
-    - name: string 
+    - name: string
 - `text: <size>, content` - Add text to a box.
     - size: `huge`, `title`, `normal`, `small`
     - content: string
 - `image: filename` - Add an image with the specified filename.
-    - filename: string 
-- `end` - End a slide or define block. 
+    - filename: string
+- `end` - End a slide or define block.
 - `template: name` - Exact same as defining a slide, except it will not be rendered.
-    - name: string 
-- `uses: name` - Include a slide or template in another slide. You can then define boxes that are in those slides/templates.  
+    - name: string
+- `uses: name` - Include a slide or template in another slide. You can then define boxes that are in those slides/templates.
     - name: string
 
 Example of all the above commands in use:
@@ -37,11 +37,11 @@ end
 
 slide: "slide1"
     uses: "my-template"
-    
+
     define: "title-box"
         text: title, "Hello World!"
     end
-    
+
     define: "content-box"
         text: normal, "This is some text."
         image: "yourimage.png"
@@ -53,11 +53,11 @@ Note: you don't need to use templates, the above code will render the same as th
 slide: "slide1"
     box: "title-box", stack-vertical, align-center
     box: "content-box", stack-horizontal, align-left
-    
+
     define: "title-box"
         text: title, "Hello World!"
     end
-    
+
     define: "content-box"
         text: normal, "This is some text."
         image: "yourimage.png"
@@ -69,7 +69,7 @@ You can also use `uses:` on slides, not just templates, for including full slide
 ```
 illuscribe <path-to-your-slideshow-file>
 ```
-Also, it runs in 16:9 aspect ratio by default. If you have a different aspect ratio monitor you can specify the initial window dimensions like so:
+By default Illuscribe runs at the same aspect ratio as the monitor it is launched on. If you want a different aspect ratio, you can specify the initial window dimensions like so:
 ```
 illuscribe <path-to-you-slideshow-file> <window-width> <window-height>
 ```

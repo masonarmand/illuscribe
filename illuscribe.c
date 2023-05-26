@@ -220,7 +220,7 @@ int main(int argc, char** argv)
                 render_slideshow(width, height, slide_list);
         }
         else {
-                render_slideshow(854, 480, slide_list); /* default to 16:9 aspect ratio */
+                render_slideshow(0, 0, slide_list);
         }
         slide_list_free(&slide_list);
 
@@ -299,8 +299,10 @@ void render_slideshow(int window_width, int window_height, SlideList list)
         int screen;
         int last_width = window_width;
         int last_height = window_height;
+        unsigned int dpy_width, dpy_height;
         unsigned int slide_idx = 0;
         unsigned int i;
+        float scale_factor = 0.5f;
         bool running = true;
 
         dpy = XOpenDisplay(NULL);
@@ -310,6 +312,15 @@ void render_slideshow(int window_width, int window_height, SlideList list)
         }
 
         screen = DefaultScreen(dpy);
+
+        /* calculate window dimensions */
+        if (window_width == 0 || window_height == 0) {
+                dpy_width = DisplayWidth(dpy, screen);
+                dpy_height = DisplayHeight(dpy, screen);
+                window_width = dpy_width * scale_factor;
+                window_height = dpy_height * scale_factor;
+        }
+
         window = XCreateSimpleWindow(dpy, RootWindow(dpy, screen),
                                      10, 10, window_width, window_height,
                                      1, 0x000000, 0xFFFFFF);
@@ -541,14 +552,6 @@ void render_box(Box box, unsigned int window_width, unsigned int window_height, 
         int box_y = box.y * window_height;
         int box_width = box.width * window_width;
         int box_height = box.height * window_height;
-        /*GC gc;
-        XGCValues gcvalues;
-        gc = XCreateGC(dpy, window, 0, &gcvalues);
-        XSetLineAttributes(dpy, gc, 1, LineSolid, CapButt, JoinMiter);
-        XSetForeground(dpy, gc, 0x000000);
-
-        XDrawRectangle(dpy, window, gc, box_x, box_y, box_width, box_height);
-        XFreeGC(dpy, gc);*/
 
         for (i = 0; i < box.element_count; i++) {
                 switch(box.elements[i]->type) {

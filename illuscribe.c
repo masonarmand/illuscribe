@@ -10,6 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/Xft/Xft.h>
 #include <X11/keysym.h>
@@ -121,6 +122,7 @@ void parse_slideshow(char* filename, SlideList* list);
 void render_endslide(Display* dpy, Window window, int screen);
 void render_slideshow(int width, int height, SlideList list);
 void change_slide(Display* dpy, Window window, SlideList list, unsigned int* slide_idx, int screen, int amount);
+void toggle_fullscreen(Display* dpy, Window window, int screen, XEvent e, bool fullscreen);
 void update_title(Display* dpy, Window window, SlideList list, unsigned int slide_idx);
 char* get_top_text(Slide slide);
 void render_slide(Slide slide, Display* dpy, Window window, int screen);
@@ -303,6 +305,7 @@ void render_slideshow(int window_width, int window_height, SlideList list)
         unsigned int slide_idx = 0;
         unsigned int i;
         float scale_factor = 0.5f;
+        bool is_fullscreen = false;
         bool running = true;
 
         dpy = XOpenDisplay(NULL);
@@ -327,6 +330,7 @@ void render_slideshow(int window_width, int window_height, SlideList list)
 
         del_window = XInternAtom(dpy, "WM_DELETE_WINDOW", 0);
         XSetWMProtocols(dpy, window, &del_window, 1);
+
         XSelectInput(dpy, window, ExposureMask | KeyPressMask | StructureNotifyMask | ButtonPressMask);
         XMapWindow(dpy, window);
 
@@ -393,6 +397,10 @@ void render_slideshow(int window_width, int window_height, SlideList list)
                         else if (key == XK_Left) {
                                 change_slide(dpy, window, list, &slide_idx, screen, -1);
                         }
+                        else if (key == XK_f) {
+                                is_fullscreen = !is_fullscreen;
+                                toggle_fullscreen(dpy, window, screen, e, is_fullscreen);
+                        }
                         else if (key == XK_Escape) {
                                 running = false;
                         }
@@ -435,6 +443,22 @@ void change_slide(Display* dpy, Window window, SlideList list, unsigned int* sli
 
         render_slide(*list.slides[*slide_idx], dpy, window, screen);
         update_title(dpy, window, list, *slide_idx);
+}
+
+void toggle_fullscreen(Display* dpy, Window window, int screen, XEvent e, bool fullscreen)
+{
+        Atom wm_state = XInternAtom(dpy, "_NET_WM_STATE", False);
+        Atom wm_state_fullscreen = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
+
+        e.xany.type = ClientMessage;
+        e.xclient.message_type = wm_state;
+        e.xclient.format = 32;
+        e.xclient.window = window;
+        e.xclient.data.l[0] = fullscreen ? 1 : 0;
+        e.xclient.data.l[1] = wm_state_fullscreen;
+        e.xclient.data.l[3] = 0l;
+
+        XSendEvent(dpy, RootWindow(dpy, screen), 0, SubstructureNotifyMask | SubstructureRedirectMask, &e);
 }
 
 

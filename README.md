@@ -7,6 +7,14 @@ Illuscribe is a simple program written in C using the Xlib and stb_image librari
 For an example of what a slideshow may look like, view the `example/` folder
 (credit to https://www.vangoghmuseum.nl for the Van Gogh painting scans)
 
+## Keybinds
+`Arrow Left`, `Right Mouse Button`, `Scroll Down` - Go to previous slide.  
+`Arrow Right`, `Space`, `Enter`, `Left Mouse Button`, `Scroll Up` - Go to next slide.  
+`Key F` - Toggle fullscreen.  
+`Key E` - Resize back to original window size.  
+`Escape`, `Key Q` - Quit.  
+
+
 ## Syntax/Commands
 Here are the basic commands/functions:
 - `slide: name` - Declares a slide. Slides contain boxes.

@@ -404,7 +404,7 @@ void render_slideshow(int window_width, int window_height, SlideList list)
                         else if (key == XK_e) {
                                 XResizeWindow(dpy, window, window_width, window_height);
                         }
-                        else if (key == XK_Escape) {
+                        else if (key == XK_Escape || key == XK_q) {
                                 running = false;
                         }
                         break;

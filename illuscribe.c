@@ -401,6 +401,9 @@ void render_slideshow(int window_width, int window_height, SlideList list)
                                 is_fullscreen = !is_fullscreen;
                                 toggle_fullscreen(dpy, window, screen, e, is_fullscreen);
                         }
+                        else if (key == XK_e) {
+                                XResizeWindow(dpy, window, window_width, window_height);
+                        }
                         else if (key == XK_Escape) {
                                 running = false;
                         }

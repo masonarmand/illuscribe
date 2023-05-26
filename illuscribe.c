@@ -328,7 +328,6 @@ void render_slideshow(int window_width, int window_height, SlideList list)
                 }
                 window_width = dpy_width * scale_factor;
                 window_height = dpy_height * scale_factor;
-                printf("%d, %d  %d, %d\n", window_width, window_height, dpy_width, dpy_height);
         }
 
         window = XCreateSimpleWindow(dpy, RootWindow(dpy, screen),

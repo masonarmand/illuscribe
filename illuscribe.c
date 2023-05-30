@@ -1743,6 +1743,7 @@ void handle_text(SlideList list, Slide** current_slide, Box** current_box, char*
         }
         else {
                 fprintf(stderr, "Syntax Error on line %d : Expected 'title', 'normal', or 'small' for argument 1 but found %s\n", line_num, args[1]);
+                exit(1);
         }
 
         create_text(&text, remove_quotes(args[2]), font_size);
@@ -1752,6 +1753,7 @@ void handle_text(SlideList list, Slide** current_slide, Box** current_box, char*
 
         if (*current_box == NULL) {
                 fprintf(stderr, "Logic Error on line %d : Attempting to add text to non-box object.\n", line_num);
+                exit(1);
         }
         add_element_to_box(*current_box, se);
 }
@@ -1772,6 +1774,7 @@ void handle_image(SlideList list, Slide** current_slide, Box** current_box, char
 
         if (*current_box == NULL) {
                 fprintf(stderr, "Logic Error on line %d : Attempting to add text to non-box object.\n", line_num);
+                exit(1);
         }
         add_element_to_box(*current_box, se);
 }

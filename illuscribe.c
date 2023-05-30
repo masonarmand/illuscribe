@@ -819,7 +819,7 @@ void position_elements(Box* box, Display* dpy, Window window)
                         line_height = get_line_height(*text, box_height_px);
 
                         if (box->element_count == 1) {
-                                /* vertically center text if theres only one text element */
+                                /* vertically center text if theres only one element */
                                 text->y = 0.5f + (line_height / 2);
                         }
                         else {
@@ -862,7 +862,7 @@ void position_elements(Box* box, Display* dpy, Window window)
                         }
 
                         if (box->element_count == 1) {
-                                /* vertically center image if theres only one text element */
+                                /* vertically center image if theres only one element */
                                 image->y = 0.5f - (image->rheight / 2);
                         }
                         else {

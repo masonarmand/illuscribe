@@ -144,6 +144,7 @@ void apply_word_wrap(Display* dpy, Window window, Box* box);
 float calculate_hbox_width(Slide* slide, int* cur_count, int* row_count, unsigned int cur_index);
 float calculate_vbox_height(Display* dpy, Window window, Box* box);
 void create_slide(Slide** slide, char* name, bool visible);
+SlideElement* alloc_slide_element(ElementType type);
 void slide_list_init(SlideList *slide_list);
 void slide_list_append(SlideList *slide_list, Slide *slide);
 
@@ -1037,14 +1038,8 @@ void apply_word_wrap(Display* dpy, Window window, Box* box)
                                 create_text(&(box->elements[i+1]->element.text), next_line, fn);
                         }
                         else {
-                                SlideElement* se = malloc(sizeof(SlideElement));
+                                SlideElement* se = alloc_slide_element(ELEMENT_TYPE_TEXT);
                                 Text* new_text = NULL;
-
-                                if (!se) {
-                                        fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                                        exit(1);
-                                }
-                                se->type = ELEMENT_TYPE_TEXT;
 
                                 next_line = malloc(next_len + 1);
                                 next_line[0] = '\0';
@@ -1129,24 +1124,14 @@ Slide* copy_slide(Slide* slide)
         for (i = 0; i < slide->element_count; i++) {
                 if (slide->elements[i]->type == ELEMENT_TYPE_BOX) {
                         Box* box = copy_box(slide->elements[i]->element.box);
-                        SlideElement* se = malloc(sizeof(SlideElement));
-                        if (!se) {
-                                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                                exit(1);
-                        }
-                        se->type = ELEMENT_TYPE_BOX;
+                        SlideElement* se = alloc_slide_element(ELEMENT_TYPE_BOX);
                         se->element.box = box;
 
                         add_element_to_slide(new_slide, se);
                 }
                 if (slide->elements[i]->type == ELEMENT_TYPE_SLIDE) {
                         Slide* found_slide = copy_slide(slide->elements[i]->element.slide);
-                        SlideElement* se = malloc(sizeof(SlideElement));
-                        if (!se) {
-                                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                                exit(1);
-                        }
-                        se->type = ELEMENT_TYPE_SLIDE;
+                        SlideElement* se = alloc_slide_element(ELEMENT_TYPE_SLIDE);
                         se->element.slide = found_slide;
 
                         add_element_to_slide(new_slide, se);
@@ -1164,24 +1149,14 @@ Box* copy_box(Box* box)
         for (i = 0; i < box->element_count; i++) {
                 if (box->elements[i]->type == ELEMENT_TYPE_TEXT) {
                         Text* text = copy_text(box->elements[i]->element.text);
-                        SlideElement* se = malloc(sizeof(SlideElement));
-                        if (!se) {
-                                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                                exit(1);
-                        }
-                        se->type = ELEMENT_TYPE_TEXT;
+                        SlideElement* se = alloc_slide_element(ELEMENT_TYPE_TEXT);
                         se->element.text = text;
 
                         add_element_to_box(new_box, se);
                 }
                 if (box->elements[i]->type == ELEMENT_TYPE_IMAGE) {
                         Image* image = copy_image(box->elements[i]->element.image);
-                        SlideElement* se = malloc(sizeof(SlideElement));
-                        if (!se) {
-                                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                                exit(1);
-                        }
-                        se->type = ELEMENT_TYPE_IMAGE;
+                        SlideElement* se = alloc_slide_element(ELEMENT_TYPE_IMAGE);
                         se->element.image = image;
 
                         add_element_to_box(new_box, se);
@@ -1560,6 +1535,18 @@ void create_slide(Slide** slide, char* name, bool visible)
         (*slide)->element_count = 0;
 }
 
+
+SlideElement* alloc_slide_element(ElementType type)
+{
+        SlideElement* se = malloc(sizeof(SlideElement));
+        if (!se) {
+                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
+                exit(1);
+        }
+        se->type = type;
+        return se;
+}
+
 /*
  * This function does a bit more than splitting a string by delimiter,
  * it doesn't split text enclosed in quotes, and also leading whitespace
@@ -1698,12 +1685,7 @@ void handle_box(SlideList list, Slide** current_slide, Box** current_box, char**
 
         create_box(&box, remove_quotes(args[1]), stack_type, text_align);
 
-        se = malloc(sizeof(SlideElement));
-        if (!se) {
-                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                exit(1);
-        }
-        se->type = ELEMENT_TYPE_BOX;
+        se = alloc_slide_element(ELEMENT_TYPE_BOX);
         se->element.box = box;
 
         add_element_to_slide(*current_slide, se);
@@ -1728,12 +1710,7 @@ void handle_uses(SlideList list, Slide** current_slide, Box** current_box, char*
         }
         slide = copy_slide(found_slide);
 
-        se = malloc(sizeof(SlideElement));
-        if (!se) {
-                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                exit(1);
-        }
-        se->type = ELEMENT_TYPE_SLIDE;
+        se = alloc_slide_element(ELEMENT_TYPE_SLIDE);
         se->element.slide = slide;
 
         add_element_to_slide(*current_slide, se);
@@ -1770,12 +1747,7 @@ void handle_text(SlideList list, Slide** current_slide, Box** current_box, char*
 
         create_text(&text, remove_quotes(args[2]), font_size);
 
-        se = malloc(sizeof(SlideElement));
-        if (!se) {
-                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                exit(1);
-        }
-        se->type = ELEMENT_TYPE_TEXT;
+        se = alloc_slide_element(ELEMENT_TYPE_TEXT);
         se->element.text = text;
 
         if (*current_box == NULL) {
@@ -1795,12 +1767,7 @@ void handle_image(SlideList list, Slide** current_slide, Box** current_box, char
         check_syntax(args, argc, expected, line_num);
         create_image(&image, remove_quotes(args[1]));
 
-        se = malloc(sizeof(SlideElement));
-        if (!se) {
-                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                exit(1);
-        }
-        se->type = ELEMENT_TYPE_IMAGE;
+        se = alloc_slide_element(ELEMENT_TYPE_IMAGE);
         se->element.image = image;
 
         if (*current_box == NULL) {

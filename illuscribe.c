@@ -941,127 +941,131 @@ void apply_word_wrap(Display* dpy, Window window, Box* box)
         current_y = padding;
 
         for (i = 0; i < box->element_count; i++) {
-                if (box->elements[i]->type == ELEMENT_TYPE_TEXT) {
-                        Text* text = box->elements[i]->element.text;
-                        float line_height;
-                        float slide_text_width;
+                Text* text;
+                float line_height;
+                float slide_text_width;
 
-                        switch (text->font_size) {
-                        case FONT_HUGE:
-                                text->size = (global_huge_font_size / attr.width);
-                                break;
-                        case FONT_TITLE:
-                                text->size = (global_title_font_size / attr.width);
-                                break;
-                        case FONT_NORMAL:
-                                text->size = (global_normal_font_size / attr.width);
-                                break;
-                        case FONT_SMALL:
-                                text->size = (global_small_font_size / attr.width);
-                                break;
+                if (box->elements[i]->type != ELEMENT_TYPE_TEXT) {
+                        continue;
+                }
+
+                text = box->elements[i]->element.text;
+
+                switch (text->font_size) {
+                case FONT_HUGE:
+                        text->size = (global_huge_font_size / attr.width);
+                        break;
+                case FONT_TITLE:
+                        text->size = (global_title_font_size / attr.width);
+                        break;
+                case FONT_NORMAL:
+                        text->size = (global_normal_font_size / attr.width);
+                        break;
+                case FONT_SMALL:
+                        text->size = (global_small_font_size / attr.width);
+                        break;
+                }
+
+                slide_text_width = ((get_text_width(*text, dpy) / attr.width) / 1.0f) + padding;
+
+                if (slide_text_width > box->width && strstr(text->content, " ") != NULL) {
+                        unsigned int split_len = 0;
+                        unsigned int j;
+                        unsigned int break_idx = 0;
+                        unsigned int new_len = 0;
+                        unsigned int next_len = 0;
+                        float width = 0.0;
+                        float max_width = 0.0;
+                        float space_width = (get_char_width(' ', text->font_size, dpy) / attr.width) / 1.0f;
+                        char** split_text = split_str(text->content, " ", &split_len);
+                        char* new_line = NULL;
+                        char* next_line = NULL;
+                        FontSize fn = text->font_size;
+
+                        for (j = 0; j < split_len; j++) {
+                                float temp_width = (get_strtext_width(split_text[j], text->font_size, dpy) / attr.width) / 1.0f;
+                                if (temp_width > max_width) {
+                                        max_width = temp_width;
+                                }
                         }
 
-                        slide_text_width = ((get_text_width(*text, dpy) / attr.width) / 1.0f) + padding;
+                        if (max_width > box->width) {
+                                fprintf(stderr, "Error: Single word in text is wider than box width. In box: %s\n", box->name);
+                                exit(1);
+                        }
 
-                        if (slide_text_width > box->width && strstr(text->content, " ") != NULL) {
-                                unsigned int split_len = 0;
-                                unsigned int j;
-                                unsigned int break_idx = 0;
-                                unsigned int new_len = 0;
-                                unsigned int next_len = 0;
-                                float width = 0.0;
-                                float max_width = 0.0;
-                                float space_width = (get_char_width(' ', text->font_size, dpy) / attr.width) / 1.0f;
-                                char** split_text = split_str(text->content, " ", &split_len);
-                                char* new_line = NULL;
-                                char* next_line = NULL;
-                                FontSize fn = text->font_size;
+                        for (j = 0; j < split_len; j++) {
+                                if (j > 0)
+                                        break_idx = j - 1;
+                                width += (get_strtext_width(split_text[j], text->font_size, dpy) / attr.width) / 1.0f;
+                                width += space_width;
+                                if (width >= box->width)
+                                        break;
+                        }
 
-                                for (j = 0; j < split_len; j++) {
-                                        float temp_width = (get_strtext_width(split_text[j], text->font_size, dpy) / attr.width) / 1.0f;
-                                        if (temp_width > max_width) {
-                                                max_width = temp_width;
-                                        }
+                        /* create new line of text up to the break point */
+                        for (j = 0; j < break_idx; j++)
+                                new_len += strlen(split_text[j]) + 1;
+
+                        new_line = malloc(new_len + 1);
+                        new_line[0] = '\0';
+
+                        for (j = 0; j < break_idx; j++) {
+                                strcat(new_line, split_text[j]);
+                                strcat(new_line, " ");
+                        }
+
+                        free_text(box->elements[i]->element.text);
+                        create_text(&box->elements[i]->element.text, new_line, fn);
+
+                        /* create the remaining line of text */
+                        for (j = break_idx; j < split_len; j++)
+                                next_len += strlen(split_text[j]) + 1;
+
+                        /* If theres a line of text below the current one, the remaining text will get combined with it */
+                        if (i + 1 < box->element_count && box->elements[i+1]->type == ELEMENT_TYPE_TEXT) {
+                                Text* next_text = box->elements[i+1]->element.text;
+                                next_len += strlen(next_text->content);
+                                next_line = malloc(next_len + 1);
+                                next_line[0] = '\0';
+                                for (j = break_idx; j < split_len; j++) {
+                                        strcat(next_line, split_text[j]);
+                                        strcat(next_line, " ");
                                 }
+                                strcat(next_line, next_text->content);
+                                free_text(box->elements[i+1]->element.text);
+                                create_text(&(box->elements[i+1]->element.text), next_line, fn);
+                        }
+                        else {
+                                SlideElement* se = malloc(sizeof(SlideElement));
+                                Text* new_text = NULL;
 
-                                if (max_width > box->width) {
-                                        fprintf(stderr, "Error: Single word in text is wider than box width. In box: %s\n", box->name);
+                                if (!se) {
+                                        fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
                                         exit(1);
                                 }
+                                se->type = ELEMENT_TYPE_TEXT;
 
-                                for (j = 0; j < split_len; j++) {
-                                        if (j > 0)
-                                                break_idx = j - 1;
-                                        width += (get_strtext_width(split_text[j], text->font_size, dpy) / attr.width) / 1.0f;
-                                        width += space_width;
-                                        if (width >= box->width)
-                                                break;
+                                next_line = malloc(next_len + 1);
+                                next_line[0] = '\0';
+                                for (j = break_idx; j < split_len; j++) {
+                                        strcat(next_line, split_text[j]);
+                                        strcat(next_line, " ");
                                 }
 
-                                /* create new line of text up to the break point */
-                                for (j = 0; j < break_idx; j++)
-                                        new_len += strlen(split_text[j]) + 1;
-
-                                new_line = malloc(new_len + 1);
-                                new_line[0] = '\0';
-
-                                for (j = 0; j < break_idx; j++) {
-                                        strcat(new_line, split_text[j]);
-                                        strcat(new_line, " ");
-                                }
-
-                                free_text(box->elements[i]->element.text);
-                                create_text(&box->elements[i]->element.text, new_line, fn);
-
-                                /* create the remaining line of text */
-                                for (j = break_idx; j < split_len; j++)
-                                        next_len += strlen(split_text[j]) + 1;
-
-                                /* If theres a line of text below the current one, the remaining text will get combined with it */
-                                if (i + 1 < box->element_count && box->elements[i+1]->type == ELEMENT_TYPE_TEXT) {
-                                        Text* next_text = box->elements[i+1]->element.text;
-                                        next_len += strlen(next_text->content);
-                                        next_line = malloc(next_len + 1);
-                                        next_line[0] = '\0';
-                                        for (j = break_idx; j < split_len; j++) {
-                                                strcat(next_line, split_text[j]);
-                                                strcat(next_line, " ");
-                                        }
-                                        strcat(next_line, next_text->content);
-                                        free_text(box->elements[i+1]->element.text);
-                                        create_text(&(box->elements[i+1]->element.text), next_line, fn);
-                                }
-                                else {
-                                        SlideElement* se = malloc(sizeof(SlideElement));
-                                        Text* new_text = NULL;
-
-                                        if (!se) {
-                                                fprintf(stderr, "Error: Failed to allocate memory for SlideElement.\n");
-                                                exit(1);
-                                        }
-                                        se->type = ELEMENT_TYPE_TEXT;
-
-                                        next_line = malloc(next_len + 1);
-                                        next_line[0] = '\0';
-                                        for (j = break_idx; j < split_len; j++) {
-                                                strcat(next_line, split_text[j]);
-                                                strcat(next_line, " ");
-                                        }
-
-                                        create_text(&new_text, next_line, fn);
-                                        se->element.text = new_text;
-                                        add_element_to_box_at_index(box, se, i+1);
-                                }
-
-                                i--;
-                                free_split_str(split_text, split_len);
-                                continue;
+                                create_text(&new_text, next_line, fn);
+                                se->element.text = new_text;
+                                add_element_to_box_at_index(box, se, i+1);
                         }
 
-                        line_height = get_line_height(*text, attr.height);
-                        text->y = current_y + get_font_ascent(*text, attr.height);
-                        current_y += line_height;
+                        i--;
+                        free_split_str(split_text, split_len);
+                        continue;
                 }
+
+                line_height = get_line_height(*text, attr.height);
+                text->y = current_y + get_font_ascent(*text, attr.height);
+                current_y += line_height;
         }
 }
 

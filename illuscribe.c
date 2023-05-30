@@ -141,6 +141,7 @@ float get_text_width(Text text, Display* dpy);
 float get_line_height(Text text, int box_height);
 float get_font_ascent(Text text, int box_height);
 void apply_word_wrap(Display* dpy, Window window, Box* box);
+float calculate_hbox_width(Slide* slide, int* cur_count, int* row_count, unsigned int cur_index);
 float calculate_vbox_height(Display* dpy, Window window, Box* box);
 void create_slide(Slide** slide, char* name, bool visible);
 void slide_list_init(SlideList *slide_list);
@@ -713,8 +714,6 @@ void apply_layout(Slide* slide, Display* dpy, Window window)
         bool in_row = false;
 
         unsigned int i;
-        unsigned int j;
-
 
         /* calculate default box size */
         for (i = 0; i < slide->element_count; i++) {
@@ -750,21 +749,8 @@ void apply_layout(Slide* slide, Display* dpy, Window window)
                 box = slide->elements[i]->element.box;
                 if (box->stack_type == STACK_HORIZONTAL) {
                         if (!in_row) {
-                                for (j = i; j < slide->element_count; j++) {
-                                        Box* rbox;
-                                        if (slide->elements[j]->type != ELEMENT_TYPE_BOX)
-                                                continue;
-                                        rbox = slide->elements[j]->element.box;
-                                        if (rbox->stack_type == STACK_HORIZONTAL)
-                                                cur_count++;
-                                        if (rbox->stack_type == STACK_VERTICAL || j == slide->element_count - 1) {
-                                                hbox_width = cur_count <= 1 ? (1.0f) : (1.0f / cur_count);
-                                                cur_count = 0;
-                                                in_row = true;
-                                                row_count ++;
-                                                break;
-                                        }
-                                }
+                                hbox_width = calculate_hbox_width(slide, &cur_count, &row_count, i);
+                                in_row = true;
                         }
                         box->width = hbox_width;
                         apply_word_wrap(dpy, window, box);
@@ -1077,6 +1063,27 @@ void apply_word_wrap(Display* dpy, Window window, Box* box)
                         current_y += line_height;
                 }
         }
+}
+
+
+float calculate_hbox_width(Slide* slide, int* cur_count, int* row_count, unsigned int cur_index)
+{
+        unsigned int i;
+        for (i = cur_index; i < slide->element_count; i++) {
+                Box* rbox;
+                if (slide->elements[i]->type != ELEMENT_TYPE_BOX)
+                        continue;
+                rbox = slide->elements[i]->element.box;
+                if (rbox->stack_type == STACK_HORIZONTAL)
+                        ++*cur_count;
+                if (rbox->stack_type == STACK_VERTICAL || i == slide->element_count - 1) {
+                        float width = *cur_count <= 1 ? (1.0f) : (1.0f / *cur_count);
+                        *cur_count = 0;
+                        (*row_count)++;
+                        return width;
+                }
+        }
+        return 1.0f;
 }
 
 

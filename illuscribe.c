@@ -1783,12 +1783,13 @@ void handle_image(SlideList list, Slide** current_slide, Box** current_box, char
 void handle_define(SlideList list, Slide** current_slide, Box** current_box, char** args, unsigned int argc, unsigned int line_num)
 {
         char expected[] = "str";
-        char* name = remove_quotes(args[1]);
+        char* name;
         SlideElement* se;
         (void) current_box;
         (void) list;
 
         check_syntax(args, argc, expected, line_num);
+        name = remove_quotes(args[1]);
         se = find_element_by_name(name, *current_slide);
         free(name);
 
